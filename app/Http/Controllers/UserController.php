@@ -27,32 +27,26 @@ class UserController extends Controller
 
         $user = $request->user();
 
-        // Delete old avatar if it exists
-        if ($user->avatar) {
-            $oldFilename = basename($user->avatar);
-            $oldPath = public_path('avatars/' . $oldFilename);
-            if (file_exists($oldPath) && is_file($oldPath)) {
-                unlink($oldPath);
-            }
+        // Delete old avatar from Cloudinary
+        if ($user->avatar && str_contains($user->avatar, 'cloudinary')) {
+            $publicId = pathinfo(basename($user->avatar), PATHINFO_FILENAME);
+            cloudinary()->destroy('avatars/' . $publicId);
         }
 
-        // Store new avatar
+        // Upload to Cloudinary
         if ($request->file('avatar')) {
-            $file = $request->file('avatar');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('avatars'), $filename);
+            $result = cloudinary()->upload($request->file('avatar')->getRealPath(), [
+                'folder' => 'avatars',
+            ]);
             
-            $url = url('avatars/' . $filename);
-
+            $url = $result->getSecurePath();
             $user->avatar = $url;
             $user->save();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Avatar updated successfully.',
-                'data' => [
-                    'avatar' => $url
-                ]
+                'data' => ['avatar' => $url]
             ]);
         }
 
@@ -67,10 +61,9 @@ class UserController extends Controller
         $user = $request->user();
 
         if ($user->avatar) {
-            $oldFilename = basename($user->avatar);
-            $oldPath = public_path('avatars/' . $oldFilename);
-            if (file_exists($oldPath) && is_file($oldPath)) {
-                unlink($oldPath);
+            if (str_contains($user->avatar, 'cloudinary')) {
+                $publicId = pathinfo(basename($user->avatar), PATHINFO_FILENAME);
+                cloudinary()->destroy('avatars/' . $publicId);
             }
             
             $user->avatar = null;
