@@ -1,1 +1,34 @@
 
+services:
+  - type: web
+    name: marea-backend
+    env: php
+    region: frankfurt
+    plan: free
+    buildCommand: composer install --no-dev --optimize-autoloader
+    startCommand: php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_NAME
+        value: MAREA
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        value: base64:JjRmV7Q8r+J8s5hL6N9pU3G2a5V8b1N4M7k9L2jR5A8=
+      - key: APP_DEBUG
+        value: "false"
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        value: gateway01eu-central-1prod.aws.tidbcloud.com
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_DATABASE
+        value: marea
+      - key: DB_USERNAME
+        value: 4KDYycXUNjKurfN.root
+      - key: DB_PASSWORD
+        value: v33yc8tbq6bPZqss
+      - key: DB_SSL_CA
+        value: "true"
+      - key: LOG_CHANNEL
+        value: stderr
