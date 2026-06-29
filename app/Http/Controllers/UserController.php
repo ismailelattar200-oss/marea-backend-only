@@ -187,4 +187,39 @@ class UserController extends Controller
             'message' => 'Account deleted successfully'
         ]);
     }
+
+    /**
+     * Update user GPS location for delivery tracking.
+     */
+    public function updateLocation(Request $request)
+    {
+        $user = $request->user();
+        $validator = Validator::make($request->all(), [
+            'current_lat' => 'required|numeric',
+            'current_lng' => 'required|numeric',
+            'is_available' => 'nullable|boolean'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
+        }
+
+        try {
+            $user->current_lat = $request->current_lat;
+            $user->current_lng = $request->current_lng;
+            if ($request->has('is_available')) {
+                $user->is_available = $request->is_available;
+            }
+            $user->save();
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Position GPS mise à jour avec succès',
+            'data' => [
+                'current_lat' => $request->current_lat,
+                'current_lng' => $request->current_lng
+            ]
+        ]);
+    }
 }

@@ -12,6 +12,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\AiController;
 
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
@@ -27,6 +28,17 @@ use App\Http\Controllers\Admin\DashboardAiController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Delivery\DeliveryAiController;
 use App\Models\User;
+
+// ── Debug Route ──────────────────────────────────────────────────
+Route::get('/debug-error', function () {
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $count = \App\Models\MenuItem::count();
+        return response()->json(['status' => 'ok', 'menu_items_count' => $count]);
+    } catch (\Throwable $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()], 200);
+    }
+});
 
 // ── Auth ────────────────────────────────────────────────────────
 Route::post('/login', [AuthController::class, 'login']);
@@ -44,6 +56,7 @@ Route::middleware('auth:sanctum')->post('/user/avatar', [UserController::class, 
 Route::middleware('auth:sanctum')->delete('/user/avatar', [UserController::class, 'deleteAvatar']);
 Route::middleware('auth:sanctum')->get('/user/orders', [UserController::class, 'getOrders']);
 Route::middleware('auth:sanctum')->put('/user/profile', [UserController::class, 'updateProfile']);
+Route::middleware('auth:sanctum')->put('/user/location', [UserController::class, 'updateLocation']);
 Route::middleware('auth:sanctum')->put('/user/password', [UserController::class, 'updatePassword']);
 Route::middleware('auth:sanctum')->delete('/user', [UserController::class, 'deleteAccount']);
 
@@ -63,6 +76,7 @@ Route::get('/orders/{order_number}', [OrderController::class, 'show']);
 
 Route::post('/contact', [ContactController::class, 'store']);
 Route::post('/job-applications', [JobApplicationController::class, 'store']);
+Route::post('/feedbacks', [FeedbackController::class, 'store']);
 
 // AI Assistant
 Route::post('/chat', [AiController::class, 'chat']);

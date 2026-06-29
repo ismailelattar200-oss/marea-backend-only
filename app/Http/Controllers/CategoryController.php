@@ -11,6 +11,8 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = Category::active()->ordered()->get();
-        return CategoryResource::collection($categories);
+        $data = CategoryResource::collection($categories)->resolve();
+        $json = json_encode(['data' => $data], JSON_INVALID_UTF8_SUBSTITUTE);
+        return response($json, 200, ['Content-Type' => 'application/json']);
     }
 }

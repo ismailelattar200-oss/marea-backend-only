@@ -13,6 +13,22 @@ use App\Mail\OrderConfirmationMail;
 
 class OrderController extends Controller
 {
+    private function sanitizeUtf8($data)
+    {
+        if (is_string($data)) {
+            return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+        }
+        if (is_array($data)) {
+            $cleaned = [];
+            foreach ($data as $key => $value) {
+                $cleanKey = is_string($key) ? mb_convert_encoding($key, 'UTF-8', 'UTF-8') : $key;
+                $cleaned[$cleanKey] = $this->sanitizeUtf8($value);
+            }
+            return $cleaned;
+        }
+        return $data;
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -38,6 +54,8 @@ class OrderController extends Controller
             'subtotal' => 'required|numeric|min:0',
             'total' => 'required|numeric|min:0',
         ]);
+
+        $validated = $this->sanitizeUtf8($validated);
 
         if ($validated['type'] === 'livraison' && empty($validated['customer_address'])) {
             return response()->json(['message' => 'L\'adresse est obligatoire pour les livraisons'], 422);
@@ -96,7 +114,7 @@ class OrderController extends Controller
 
     public function show($order_number)
     {
-        $order = Order::with(['orderItems.menuItem', 'assignedDriver', 'delivery'])
+        $order = Order::with(['orderItems.menuItem', 'assignedDriver', 'delivery.deliveryPerson'])
             ->where('order_number', $order_number)
             ->firstOrFail();
 

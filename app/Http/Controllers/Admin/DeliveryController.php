@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class DeliveryController extends Controller
 {
@@ -89,6 +91,7 @@ class DeliveryController extends Controller
 
         $order->update([
             'assigned_to' => $validated['delivery_person_id'],
+            'status' => 'en_cours',
         ]);
 
         return new DeliveryResource($delivery->load(['order', 'deliveryPerson']));
@@ -168,6 +171,11 @@ class DeliveryController extends Controller
 
         $delivery->update($updateData);
 
+        // Toujours synchroniser le statut principal de la commande pour que le client (Seguimiento) le voie instantanément
+        if ($delivery->order) {
+            $delivery->order->update(['status' => $validated['status']]);
+        }
+
         return new DeliveryResource($delivery->load(['order', 'deliveryPerson']));
     }
 
@@ -217,6 +225,11 @@ class DeliveryController extends Controller
      */
     public function deliveryPersons()
     {
+        if (!Schema::hasColumn('users', 'vehicle')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('vehicle')->nullable();
+            });
+        }
         $deliveryUsers = User::where('role', 'delivery')->get();
 
         $workload = Delivery::whereIn('status', ['en_attente', 'en_cours', 'en_preparation'])
@@ -230,6 +243,8 @@ class DeliveryController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'vehicle' => $user->vehicle,
+                'avatar' => $user->avatar,
                 'active_deliveries' => $workload->get($user->id, 0),
             ];
         });

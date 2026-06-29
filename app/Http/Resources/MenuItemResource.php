@@ -12,8 +12,8 @@ class MenuItemResource extends JsonResource
         return [
             'id'             => $this->id,
             'category_id'    => $this->category_id,
-            'name'           => $this->name,
-            'description'    => $this->description,
+            'name'           => is_string($this->name) ? mb_convert_encoding($this->name, 'UTF-8', 'UTF-8') : $this->name,
+            'description'    => is_string($this->description) ? mb_convert_encoding($this->description, 'UTF-8', 'UTF-8') : $this->description,
             'price'          => (float) $this->price,
             'image_url'      => $this->image_url,
             'display_number' => $this->display_number,

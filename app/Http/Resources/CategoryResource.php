@@ -11,9 +11,9 @@ class CategoryResource extends JsonResource
     {
         return [
             'id'            => $this->id,
-            'name'          => $this->name,
+            'name'          => is_string($this->name) ? mb_convert_encoding($this->name, 'UTF-8', 'UTF-8') : $this->name,
             'slug'          => $this->slug,
-            'description'   => $this->description,
+            'description'   => is_string($this->description) ? mb_convert_encoding($this->description, 'UTF-8', 'UTF-8') : $this->description,
             'display_order' => $this->display_order,
             'is_active'     => $this->is_active,
             'items_count'   => $this->when($this->menuItems_count !== null, $this->menuItems_count),

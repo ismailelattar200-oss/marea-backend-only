@@ -17,6 +17,7 @@ class User extends Authenticatable
         'password',
         'role',
         'phone',
+        'vehicle',
         'avatar',
         'birthdate',
         'notifications_enabled',
