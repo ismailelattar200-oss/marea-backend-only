@@ -129,6 +129,7 @@ Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
     Route::put('/orders/{order}', [AdminOrderController::class, 'update']);
+    Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy']);
 
     // Deliveries
     Route::get('/deliveries', [AdminDeliveryController::class, 'index']);
